@@ -1,0 +1,5 @@
+-Wall
+-Wextra
+-pedantic
+-I./src
+-std=c2x
