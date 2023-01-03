@@ -2,11 +2,13 @@
 #include "xpride.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 // Check if a character is a valid hexadecimal digit
 static bool is_hex(char c)
@@ -22,6 +24,16 @@ static int from_hex(char c)
 	if (c >= 'a' && c <= 'f') return c - 'a' + 10;
 	if (c >= 'A' && c <= 'F') return c - 'A' + 10;
 	return -1;
+}
+
+// Check if a NULL-terminated string is only made of alpha characters
+static bool is_str_alpha(char const* const str)
+{
+	// For each character c in the string
+	for (char const* c = str; *c; ++c)
+		if (!isalpha(*c)) return false;
+	// If no characters were not alpha, the whole string is alpha
+	return true;
 }
 
 resolved_flag_t* resolve_flag_for_width_height(flag_t* const flag,
@@ -134,6 +146,27 @@ flag_t* read_flag_from_file(FILE* file)
 	return flag;
 }
 
+// Utility function to add a directory (`base`) to a filename
+// NOTE: `base` should end with a '/' for this to work properly
+static char* append_directory_to_filename(char const* const base,
+                                          char const* const filename)
+{
+	// Find the size of the new string
+	size_t new_string_size = sizeof(char) * (strlen(base) + strlen(filename)) +
+	                         1; // +1 for the NULL terminator
+	// Allocate a new string based on this size
+	char* new_string = malloc(new_string_size);
+	// 0 out the string
+	memset(new_string, 0, new_string_size);
+
+	// Append the first part of the string
+	strncpy(new_string, base, new_string_size);
+	// Concat the rest
+	strncat(new_string, filename, new_string_size);
+
+	return new_string;
+}
+
 FILE* flag_file_from_name(char const* const flag_name)
 {
 	// Try to open the flag name as a path
@@ -141,7 +174,26 @@ FILE* flag_file_from_name(char const* const flag_name)
 	// If it works, return here
 	if (file) return file;
 
-	// TODO: Look up flag name in other places
+	// We'll now try to find a matching file in a common location
 
-	return file;
+	// We make sure there are no weird characters in the flag name to avoid path
+	// traversals and other bad stuff
+	if (!is_str_alpha(flag_name)) return 0;
+
+	// Try to load a flag in "/usr/share/flags/"
+	{
+		// This allocates a string, we need to free it
+		char* flag_path =
+		    append_directory_to_filename("/usr/share/flags/", flag_name);
+		file = fopen(flag_path, "r");
+
+		// Free the string
+		free(flag_path);
+
+		// If it works, return the flag file
+		if (file) return file;
+	}
+
+	// If nothing worked, return null
+	return 0;
 }
