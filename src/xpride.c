@@ -173,16 +173,16 @@ int main(int argc, char** argv)
 	// Create a simple graphics context for drawing things
 	xcb_gcontext_t graphics_context = create_blank_gc(x_connection, x_screen);
 
-	// Main even loop, while there are events available, recieve them, and store
-	// them in `event`
+	// Main even loop, while there are events available, recieve them, and
+	// store them in `event`
 	xcb_generic_event_t* event;
 	while ((event = xcb_wait_for_event(x_connection))) {
 		switch (event->response_type & ~0x80) {
 
 			// On expose (draw) event
 			case XCB_EXPOSE: {
-				// Convert the event to an expose event, to get access to more
-				// properties
+				// Convert the event to an expose event, to get access to
+				// more properties
 				xcb_expose_event_t* expose_event = (xcb_expose_event_t*)event;
 
 				// Get the window rect from the event
