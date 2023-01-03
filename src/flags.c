@@ -127,6 +127,9 @@ flag_t* read_flag_from_file(char* const filepath)
 		colors[color_index] |= digit_value;
 	}
 
+	// We read all the data we needed from the file, we can close it now
+	fclose(file);
+
 	// Now we create the flag struct
 	flag_t* flag        = malloc(sizeof(flag_t));
 	flag->color_stripes = colors;
