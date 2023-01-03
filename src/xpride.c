@@ -112,9 +112,44 @@ static void draw_flag(xcb_connection_t* x_connection,
 	free(final_flag);
 }
 
-int main(int, char**)
+// Load a flag from the program's args. If no flag is provided, return nullptr
+static flag_t* load_flag_from_args(int argc, char** argv)
 {
-	flag_t* flag = read_flag_from_file("res/pride.flag");
+	// Check if there are enough arguement
+	if (argc < 2) {
+		fprintf(stderr, "Please provide a flag to display as arguement\n");
+		return 0;
+	}
+
+	// Find a file from the name provided as an arguement
+	FILE* flag_file = flag_file_from_name(argv[1]);
+
+	// If no flag is found, give up
+	if (!flag_file) {
+		fprintf(stderr, "Invalid flag name provided: '%s'\n", argv[1]);
+		return 0;
+	}
+
+	// Try to parse a flag from a file
+	flag_t* parsed_flag = read_flag_from_file(flag_file);
+
+	// Close the file
+	fclose(flag_file);
+
+	// Return the parsed flag
+	return parsed_flag;
+}
+
+int main(int argc, char** argv)
+{
+	// Try to load a flag from the args
+	flag_t* flag = load_flag_from_args(argc, argv);
+
+	// If no flags found, give up
+	if (!flag) {
+		fprintf(stderr, "No flag was found, exiting...\n");
+		return -1;
+	}
 
 	// Connect to the default X server
 	xcb_connection_t* x_connection = xcb_connect(NULL, NULL);

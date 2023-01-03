@@ -58,10 +58,9 @@ resolved_flag_t* resolve_flag_for_width_height(flag_t* const flag,
 	return final_flag;
 }
 
-flag_t* read_flag_from_file(char* const filepath)
+flag_t* read_flag_from_file(FILE* file)
 {
-	// Open the file in reading mode
-	FILE* file = fopen(filepath, "r");
+	assert(file || "Trying to to parse a flag from a non-existant file");
 
 	// Allocate memory for the color of the stripes
 	uint32_t* colors      = malloc(MAX_STRIPE_COUNT * sizeof(uint32_t));
@@ -127,13 +126,22 @@ flag_t* read_flag_from_file(char* const filepath)
 		colors[color_index] |= digit_value;
 	}
 
-	// We read all the data we needed from the file, we can close it now
-	fclose(file);
-
 	// Now we create the flag struct
 	flag_t* flag        = malloc(sizeof(flag_t));
 	flag->color_stripes = colors;
 	flag->stripe_count  = color_index;
 
 	return flag;
+}
+
+FILE* flag_file_from_name(char const* const flag_name)
+{
+	// Try to open the flag name as a path
+	FILE* file = fopen(flag_name, "r");
+	// If it works, return here
+	if (file) return file;
+
+	// TODO: Look up flag name in other places
+
+	return file;
 }
