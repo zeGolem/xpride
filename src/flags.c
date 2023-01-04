@@ -147,14 +147,15 @@ flag_t* read_flag_from_file(FILE* file)
 }
 
 // Try to open a flag with the given name in the given folder
+// This also adds `FLAG_POSTFIX` to the end of `flag_name`
 // NOTE: `folder` has to end with a '/'
 static FILE* flag_file_from_name_and_dir(char const* const folder,
                                          char const* const flag_name)
 {
 	// Find the size of the full path
-	size_t full_path_size =
-	    sizeof(char) * (strlen(folder) + strlen(flag_name)) +
-	    1; // +1 for the NULL terminator
+	size_t full_path_size = sizeof(char) * (strlen(folder) + strlen(flag_name) +
+	                                        sizeof(FLAG_POSTFIX)) +
+	                        1; // +1 for the NULL terminator
 	// Allocate the full path string based on this size
 	char* full_path = malloc(full_path_size);
 	// 0 out the string
@@ -164,6 +165,8 @@ static FILE* flag_file_from_name_and_dir(char const* const folder,
 	strncpy(full_path, folder, full_path_size);
 	// Concat the flag name
 	strncat(full_path, flag_name, full_path_size);
+	// Concat the flag postif
+	strncat(full_path, FLAG_POSTFIX, full_path_size);
 
 	// Open the file
 	FILE* flag_file = fopen(full_path, "r");

@@ -10,6 +10,9 @@
 // Max numbers of strips in a flag
 #define MAX_STRIPE_COUNT 8
 
+// Postfix/file format specifier/"type" added at the end of a flag file's name
+#define FLAG_POSTFIX ".flag"
+
 typedef struct flag {
 	size_t    stripe_count;
 	uint32_t* color_stripes;
