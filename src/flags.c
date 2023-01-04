@@ -146,25 +146,33 @@ flag_t* read_flag_from_file(FILE* file)
 	return flag;
 }
 
-// Utility function to add a directory (`base`) to a filename
-// NOTE: `base` should end with a '/' for this to work properly
-static char* append_directory_to_filename(char const* const base,
-                                          char const* const filename)
+// Try to open a flag with the given name in the given folder
+// NOTE: `folder` has to end with a '/'
+static FILE* flag_file_from_name_and_dir(char const* const folder,
+                                         char const* const flag_name)
 {
-	// Find the size of the new string
-	size_t new_string_size = sizeof(char) * (strlen(base) + strlen(filename)) +
-	                         1; // +1 for the NULL terminator
-	// Allocate a new string based on this size
-	char* new_string = malloc(new_string_size);
+	// Find the size of the full path
+	size_t full_path_size =
+	    sizeof(char) * (strlen(folder) + strlen(flag_name)) +
+	    1; // +1 for the NULL terminator
+	// Allocate the full path string based on this size
+	char* full_path = malloc(full_path_size);
 	// 0 out the string
-	memset(new_string, 0, new_string_size);
+	memset(full_path, 0, full_path_size);
 
-	// Append the first part of the string
-	strncpy(new_string, base, new_string_size);
-	// Concat the rest
-	strncat(new_string, filename, new_string_size);
+	// Append the folder path to the string
+	strncpy(full_path, folder, full_path_size);
+	// Concat the flag name
+	strncat(full_path, flag_name, full_path_size);
 
-	return new_string;
+	// Open the file
+	FILE* flag_file = fopen(full_path, "r");
+
+	// Free up the memory allocated to the string
+	free(full_path);
+
+	// Give back the file
+	return flag_file;
 }
 
 FILE* flag_file_from_name(char const* const flag_name)
@@ -181,18 +189,9 @@ FILE* flag_file_from_name(char const* const flag_name)
 	if (!is_str_alpha(flag_name)) return 0;
 
 	// Try to load a flag in "/usr/share/flags/"
-	{
-		// This allocates a string, we need to free it
-		char* flag_path =
-		    append_directory_to_filename("/usr/share/flags/", flag_name);
-		file = fopen(flag_path, "r");
-
-		// Free the string
-		free(flag_path);
-
-		// If it works, return the flag file
-		if (file) return file;
-	}
+	file = flag_file_from_name_and_dir("/usr/share/flags/", flag_name);
+	// If it works, return the flag file
+	if (file) return file;
 
 	// If nothing worked, return null
 	return 0;
