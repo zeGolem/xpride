@@ -86,7 +86,7 @@ flag_t* read_flag_from_file(FILE* file)
 	colors[0] = 0;
 
 	// Loop over each character in the file, while there is data to be read
-	while ((fread(&current_char, 1, 1, file))) {
+	while (fread(&current_char, 1, 1, file)) {
 
 		// If we encounter a new line, it's the end of the current color
 		if (current_char == '\n') {
